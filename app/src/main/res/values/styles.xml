@@ -8,4 +8,13 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="LabelListStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="LabelListStyleNoBold">
+        <item name="android:textSize">18sp</item>
+    </style>
+
 </resources>
