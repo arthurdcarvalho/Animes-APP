@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import br.com.arthur.appanimes.databinding.FilmListBinding
 import br.com.arthur.appanimes.model.Film
 import br.com.arthur.appanimes.ui.activities.FilmActivity
-
 
 class FilmAdapter : RecyclerView.Adapter<FilmAdapter.FilmViewHolder>() {
 
@@ -42,6 +40,7 @@ class FilmAdapter : RecyclerView.Adapter<FilmAdapter.FilmViewHolder>() {
 
     fun setFilms(films: List<Film>) {
         list = films
+        this.notifyDataSetChanged()
     }
 
     inner class FilmViewHolder(internal var bind: FilmListBinding) : RecyclerView.ViewHolder(bind.root) {
@@ -51,9 +50,9 @@ class FilmAdapter : RecyclerView.Adapter<FilmAdapter.FilmViewHolder>() {
                 val filmIntent = Intent(cell.context, FilmActivity::class.java)
                 filmIntent.putExtra("FilmId", film.id)
                 cell.context.startActivity(filmIntent)
-                Toast.makeText(cell.context, "Item " + bind.filmTitle.text, Toast.LENGTH_LONG).show()
             }
         }
+
     }
 
 }
