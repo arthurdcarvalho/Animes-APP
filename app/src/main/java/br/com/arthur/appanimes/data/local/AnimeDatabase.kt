@@ -5,13 +5,18 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import br.com.arthur.appanimes.data.local.dao.FilmDao
+import br.com.arthur.appanimes.data.local.dao.PeopleDao
 import br.com.arthur.appanimes.model.Film
+import br.com.arthur.appanimes.model.People
 
-@Database(entities = [Film::class], exportSchema = true, version = 1)
+@Database(entities = [Film::class, People::class], exportSchema = true, version = 1)
 @TypeConverters(Converters::class)
 abstract class AnimeDatabase : RoomDatabase() {
 
     abstract fun getFilmDao(): FilmDao
+
+    abstract fun getPeopleDao(): PeopleDao
 
     companion object {
         @Volatile
