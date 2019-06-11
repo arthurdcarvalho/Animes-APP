@@ -1,46 +1,63 @@
 package br.com.arthur.appanimes.data.repository
 
-import br.com.arthur.appanimes.data.local.FilmDao
+import android.content.Context
+import br.com.arthur.appanimes.data.local.dao.FilmDao
 import br.com.arthur.appanimes.data.remote.ServiceFactory
 import br.com.arthur.appanimes.model.Film
 
-class FilmRepository(private val filmDao: FilmDao) {
+class FilmRepository(private val filmDao: FilmDao, context: Context) :
+    BaseRepository(context) {
 
     private val service = ServiceFactory.getService()
 
-    suspend fun getFilms(success: (List<Film>) -> Unit) {
-        val response = service.getFilmsAsync().await()
-
-        if (response.isSuccessful) {
-            response.body().let { films ->
-                run {
-                    films?.forEach { film ->
-                        run {
-                            filmDao.saveFilm(film)
-                            success(films)
+    @Throws(ConnectionException::class)
+    suspend fun getFilms(success: (List<Film>) -> Unit, failed: (String) -> Unit) {
+        val filmsList = filmDao.getFilms()
+        if (filmsList.isNotEmpty()) {
+            success(filmsList)
+        } else if (checkConnection()) {
+            val response = service.getFilmsAsync().await()
+            if (response.isSuccessful) {
+                response.body().let { filmsResponse ->
+                    run {
+                        filmsResponse?.forEach { film ->
+                            run {
+                                filmDao.saveFilm(film)
+                                success(filmsResponse)
+                            }
                         }
-
                     }
                 }
+            } else {
+                failed("Não foi possivel obter a lista de filmes")
             }
         } else {
-            success(filmDao.getFilms())
+            throw ConnectionException("Sem conexão com a internet")
         }
     }
 
-    suspend fun getFilmById(id: String, success: (Film) -> Unit) {
-        val response = service.getFilmById(id).await()
+    @Throws(ConnectionException::class)
+    suspend fun getFilmById(id: String, success: (Film) -> Unit, failed: (String) -> Unit) {
         val film = filmDao.getFilm(id)
-
-        if (response.isSuccessful) {
-            response.body().let { filmResponse ->
-                filmResponse?.let {
-                    success(it)
-                    filmDao.saveFilm(it)
+        when {
+            film != null -> if (film.people != null) success(film)
+            checkConnection() -> {
+                val response = service.getFilmByIdAsync(id).await()
+                if (response.isSuccessful) {
+                    response.body().let { filmResponse ->
+                        {
+                            filmResponse?.let {
+                                success(it)
+                                filmDao.saveFilm(it)
+                            }
+                        }
+                    }
+                } else {
+                    failed("Não foi possível obter o filme")
                 }
             }
-        } else if (film.people != null) {
-            success(film)
+            else -> throw ConnectionException("Sem conexão com a internet")
         }
     }
+
 }
