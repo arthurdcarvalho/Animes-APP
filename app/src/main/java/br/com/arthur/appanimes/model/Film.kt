@@ -36,12 +36,15 @@ class Film(
     val people: List<String>?,
 
     @SerializedName("species")
+    @TypeConverters(List::class)
     val species: List<String>?,
 
     @SerializedName("locations")
+    @TypeConverters(List::class)
     val locations: List<String>?,
 
     @SerializedName("vehicles")
+    @TypeConverters(List::class)
     val vehicles: List<String>?,
 
     @SerializedName("url")
