@@ -1,6 +1,8 @@
 package br.com.arthur.appanimes.ui.activities
 
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -8,9 +10,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import br.com.arthur.appanimes.R
 import br.com.arthur.appanimes.databinding.ActivityMainBinding
-import br.com.arthur.appanimes.model.Film
-import br.com.arthur.appanimes.ui.FilmViewModel
 import br.com.arthur.appanimes.ui.adapters.FilmAdapter
+import br.com.arthur.appanimes.ui.viewmodel.FilmViewModel
 
 class MainActivity : BaseView() {
 
@@ -19,8 +20,6 @@ class MainActivity : BaseView() {
     private lateinit var model: FilmViewModel
 
     private var filmAdapter = FilmAdapter()
-
-    private lateinit var filmList: List<Film>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,22 +33,28 @@ class MainActivity : BaseView() {
     override fun onResume() {
         super.onResume()
         showLoadingDialog()
-        if (!model.films.hasObservers()) {
-            model.films.observe(this, Observer { films ->
+        configureClicks()
+        if (!model.filmList.hasObservers()) {
+            model.filmList.observe(this, Observer { films ->
                 dismissLoadingDialog()
+                bind.filmList.visibility = View.VISIBLE
+                bind.errorView.visibility = View.GONE
                 filmAdapter.setFilms(films)
-                filmAdapter.notifyDataSetChanged()
-                filmList = films
             })
-        }
-        if (filmList.isEmpty()) {
+            model.errorMessage.observe(this, Observer { error ->
+                dismissLoadingDialog()
+                bind.filmList.visibility = View.GONE
+                bind.errorView.visibility = View.VISIBLE
+                bind.errorView.text = error
+                Log.e(MainActivity::class.java.canonicalName, " Error $error")
+            })
             model.getFilms()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        model.films.removeObservers(this)
+        model.filmList.removeObservers(this)
     }
 
     private fun configureData() {
@@ -61,6 +66,12 @@ class MainActivity : BaseView() {
         }
         bind.filmList.itemAnimator = DefaultItemAnimator()
         bind.filmList.adapter = filmAdapter
-        filmList = ArrayList()
+    }
+
+    private fun configureClicks() {
+        bind.errorView.setOnClickListener {
+            showLoadingDialog()
+            model.getFilms()
+        }
     }
 }
