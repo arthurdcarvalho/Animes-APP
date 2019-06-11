@@ -1,4 +1,4 @@
-package br.com.arthur.appanimes.data.local
+package br.com.arthur.appanimes.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -12,11 +12,8 @@ interface FilmDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveFilm(film: Film)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun saveFilms(films: List<Film>)
-
     @Query("SELECT * FROM T_FILM F WHERE F.id = :id")
-    fun getFilm(id: String): Film
+    fun getFilm(id: String): Film?
 
     @Query("SELECT * FROM T_FILM")
     fun getFilms(): List<Film>
