@@ -6,8 +6,14 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import br.com.arthur.appanimes.R
 import br.com.arthur.appanimes.databinding.ActivityFilmBinding
+import br.com.arthur.appanimes.model.Film
+import br.com.arthur.appanimes.model.People
+import br.com.arthur.appanimes.ui.adapters.SimplePeopleAdapter
 import br.com.arthur.appanimes.ui.viewmodel.FilmViewModel
 import br.com.arthur.appanimes.ui.viewmodel.PeopleViewModel
 
@@ -17,6 +23,10 @@ class FilmActivity : AppCompatActivity() {
 
     private lateinit var filmViewModel: FilmViewModel
     private lateinit var peopleViewModel: PeopleViewModel
+
+    private var peopleAdapter = SimplePeopleAdapter()
+
+    private lateinit var film: Film
 
     companion object {
         val debug_tag = " ${FilmActivity::class.java.name} - DEBUG TAG : "
@@ -46,11 +56,20 @@ class FilmActivity : AppCompatActivity() {
         FILM_ID = intent.getStringExtra(KEY_FOR_FILM_ID)
         filmViewModel = FilmViewModel(this)
         peopleViewModel = PeopleViewModel(this)
+
+        bind.detailFilmPeoples.layoutManager = object : LinearLayoutManager(this) {
+            override fun generateDefaultLayoutParams(): RecyclerView.LayoutParams? {
+                return null
+            }
+        }
+        bind.detailFilmPeoples.itemAnimator = DefaultItemAnimator()
+        bind.detailFilmPeoples.adapter = peopleAdapter
     }
 
     @SuppressLint("SetTextI18n")
     private fun configureObservers() {
         filmViewModel.mutableFilm.observe(this, Observer { film ->
+            this.film = film
             run {
                 Log.v("$debug_tag -> First Debug", "Filme ${film.species?.get(0)}")
                 bind.detailFilmTitle.text = film.title
@@ -63,9 +82,14 @@ class FilmActivity : AppCompatActivity() {
         })
 
         peopleViewModel.peopleList.observe(this, Observer { peoples ->
+            val peoplesForAdapter = ArrayList<People>()
             for (people in peoples) {
+                if (people.films?.get(0)?.equals(film.url)!!) {
+                    peoplesForAdapter.add(people)
+                }
                 Log.v("$debug_tag -> Peoples List Debug", " Name: ${people.name}")
             }
+            peopleAdapter.setPeoples(peoplesForAdapter)
         })
 
         peopleViewModel.errorMessage.observe(this, Observer { error ->
