@@ -37,7 +37,7 @@ android {
 
 dependencies {
 
-    def roomVersion = '2.1.0-rc01'
+    def roomVersion = '2.1.0'
     def archLifecycleVersion = '2.2.0-alpha01'
     def androidxArchVersion = '2.0.0'
     def coroutines = '1.2.0'
